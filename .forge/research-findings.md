@@ -93,7 +93,7 @@
 - Addy Osmani, *"Loop Engineering"*, **2026-06-07** 발행: https://addyosmani.com/blog/loop-engineering/ (원문 직접 fetch)
 
 ### 핵심 테제 — 정확한 인용
-- > **"You shouldn't be prompting coding agents anymore. You should be designing loops that prompt your agents."** `[높음]`
+- > **"You shouldn't be prompting coding agents anymore. You should be designing loops that prompt your agents."** `[높음]` — ⚠️ **귀속 주의**: 이 문장은 Osmani 본인의 테제가 아니라 그가 글에서 **Peter Steinberger를 인용**한 것이다("Peter Steinberger recently said: …"). Osmani 본인의 정의는 바로 아래(↓). 슬라이드/문서에서 이 문장을 Osmani 테제로 단독 귀속하지 말 것.
 - > "Loop engineering is replacing yourself as the person who prompts the agent. You design the system that does it instead." `[높음]`
 
 ### 프리미티브 (원문 정확 표기)
@@ -117,7 +117,7 @@
 - **Verification Responsibility** — "Your job is to ship code you confirmed works."
 
 ### 마무리 명언 (슬라이드 클로징용)
-- > **"The model forgets, the repo doesn't."**
+- > **"The agent forgets, the repo doesn't."**
 - > **"The loop changes the work, it does not delete you from it."**
 - > **"Build the loop. But build it like someone who intends to stay the engineer, not just the person who presses go."**
 
@@ -161,7 +161,7 @@
 
 ### 입문자용 비유
 1. **복리 이자.** 일반 개발=원금만 쓰는 단리(매번 같은 실수 반복). 컴파운드 엔지니어링=수익(학습)을 원금에 재투자 → 시간이 갈수록 같은 노력으로 더 많은 산출.
-2. **근육 기억 vs 메모장.** 사람은 잊지만, 시스템은 한 번 배운 규칙을 `CLAUDE.md`에 적어두면 영원히 자동 적용한다 ("The model forgets, the repo doesn't"와 통함).
+2. **근육 기억 vs 메모장.** 사람은 잊지만, 시스템은 한 번 배운 규칙을 `CLAUDE.md`에 적어두면 영원히 자동 적용한다 ("The agent forgets, the repo doesn't"와 통함).
 
 ### 흔한 오해/주의점
 - **"AI에게 일을 많이 시키면 자동으로 복리가 된다"는 오해.** 복리는 **학습을 명시적으로 문서/룰로 환원하는 '마지막 Compound 단계'를 의식적으로 수행할 때만** 발생한다. 그 단계를 빼면 그냥 빠른 단리 개발일 뿐. `[중간]`
