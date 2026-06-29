@@ -1,2 +1,9 @@
 ~*.pptx
 __pycache__
+
+# TTS 파이프라인 — 무거운 산출물은 제외, 스크립트(*.py·run.sh·README)는 커밋
+tts/.venv/
+tts/GPT-SoVITS/
+tts/out_audio/
+tts/build/
+tts/*.log
