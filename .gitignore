@@ -5,5 +5,8 @@ __pycache__
 tts/.venv/
 tts/GPT-SoVITS/
 tts/out_audio/
+tts/out_audio_intro/
 tts/build/
+tts/build_intro/
 tts/*.log
+forge-intro-assets/frames/
