@@ -1,40 +1,18 @@
-<!-- forge-slug: voice-clone-redub-pipeline -->
-<!-- task: 5 -->
+<!-- forge-slug: forge-explainer-video-render -->
+<!-- task: 8 -->
+<!-- retro-hint: optional -->
 <!-- tdd: off -->
-# 내 목소리 클론으로 사용법 영상 재더빙 + 재사용 음성 합성 파이프라인
+# forge-explainer Remotion 프로젝트를 실제 mp4 영상으로 렌더링
 
-## 목표 / 비목표
-- **목표**: `forge-사용법-워크플로우.mp4`의 내레이션을 사용자 **본인 목소리(로컬 GPT-SoVITS zero-shot 클론)**로 재더빙해 **새 mp4로 산출**(원본 보존)한다. 동시에 `voice-samples/`에 깨끗한 참조 녹음(≤10초 + 전사)을 드롭하면 `scripts.json`의 32개 대본을 내 음성으로 합성하는 **재사용 가능한 파이프라인 스크립트**를 만든다. 참조를 교체해 재실행하면 재클론된다.
-- **비목표**:
-  - **입문 영상(`forge-입문-발표.mp4`) 재더빙** — 빌드 파이프라인 자산(슬라이드 PNG·per-slide 음성·대본 JSON)이 없어 재구성 비용이 큼. 별도 백로그 작업으로 분리.
-  - **진짜 가중치 fine-tune** — zero-shot 먼저(사용자 합의). few-shot 파인튜닝은 나중 승급 대상.
-  - **상용/클라우드 백엔드(Typecast·ElevenLabs 등)** — 프라이버시·0원을 위해 로컬 전용(ADR-0001). 막혀도 자동 클라우드 전환 금지.
-  - **대본 재작성** — `forge-video-assets/scripts/scripts.json`(32개 시청자용 내레이션) 그대로 사용.
-  - **슬라이드 디자인·프레임 재렌더** — `forge-video-assets/frames/`(fix 수정본 우선) 1920×1080 32장 재사용.
-  - **burn-in 자막** — libass 설치 게이트로 이전 작업이 막힘 → soft `mov_text` 자막 트랙 + SRT sidecar 방식 승계.
-  - **실제 음악 다운로드** — 외부 다운로드 게이트로 이전 작업이 막힘 → 기존 `forge-video-assets/music/ambient.mp3`(합성 앰비언트 베드) 재사용.
-  - **원본 `forge-사용법-워크플로우.mp4` 덮어쓰기** — 새 파일로만 산출.
-  - **CONTEXT.md 용어집** — "학습=zero-shot 참조 등록"은 구현 세부라 용어집 비대상(이전 미디어 작업 회고와 동일 판단).
+## Goal / Non-goals
+- Goal: `forge-usage-manual-edge-tts-2of2`에서 이미 새 내레이션(`narration.mp3`, 746.136초)·자막(`subtitles.srt`/`captions.ts`)에 맞춰 갱신된 `forge-explainer`의 Remotion 컴포지션(`ForgeExplainer`, `scenes.tsx`)을 `npx remotion render`로 실제 mp4 영상 파일로 렌더링한다.
+- Non-goals: 씬 타이밍·그래픽 재작업(2of2에서 이미 완료), 오디오·자막 재생성(1of2에서 이미 확정), `remotion studio`를 통한 사전 프리뷰 재검토(2of2에서 9개 지점 still 렌더로 이미 검증됨) — 이번엔 최종 렌더 결과물 자체로 확인한다.
 
-## 기준 자료
-- **용어집 항목**: 없음
-- **관련 ADR**: `.forge/adr/0001-local-voice-clone-privacy.md` — 로컬 GPT-SoVITS 선택 · 목소리 외부 전송/자동 클라우드 폴백 금지.
-- **리서치 근거**: 딥리서치(2026-06, 소스 25 / 검증 25주장) — GPT-SoVITS는 MIT·한국어 공식 지원·5초 zero-shot으로 프라이버시+0원 균형 최선이나, **M5(MPS) GPU 가속 추론 속도는 [알 수 없음]**(CPU 폴백 시 느림). 한국어 *출력 품질* 자체는 1차 벤치마크로 미검증 — S6 육안 검수에서 실측.
-- **파이프라인 근거**: `.forge/done/2026-06-28-forge-usage-workflows-video/`(plan.md·run.md) — 합성 방식(세그먼트 fade in/out 0.3s + concat, soft `mov_text` 자막 + SRT sidecar, 베드 -20~-25dB 믹싱)과 자산 구조(`forge-video-assets/{scripts,audio,frames,segs,srt,music}/`). 별도 빌드 스크립트는 없으므로 run.md의 방식을 근거로 재구성.
-- **완료 정의**: (1) 새 영상 파일(예: `forge-사용법-워크플로우-내목소리.mp4`)이 생성되어 1920×1080 H.264 + AAC이고, 32슬라이드 분량(~20분)으로 모든 내레이션이 `voice-samples/` 참조로 클론된 사용자 음성이며, 슬라이드 노출 시간·자막 타임코드가 새 음성 길이에 동기되어 있고, 재생·동기·가독성·음량·**클론 음성 정체성**(내 목소리로 들리는가) 검증을 통과한다. 원본 mp4는 변경되지 않는다. (2) 파이프라인 스크립트가 `voice-samples/` 참조 교체 후 재실행만으로 재클론·재합성된다.
+## Source of truth
+- Glossary terms: none
+- Related ADRs: none (순수 렌더링 실행 단계, 새 트레이드오프 없음)
+- Definition of Done: `forge-explainer/out/`에 mp4 파일이 생성되고, ffprobe로 실측한 길이가 `narration.mp3` 길이(746.136초, ±0.5초)와 일치하며, 사용자가 재생해 오디오·자막·화면이 전체 구간에서 어긋나지 않음을 승인한다.
 
-## 합의된 설계
-- **백엔드**: 로컬 GPT-SoVITS(MIT, 한국어 공식). `uv`로 별도 Python 3.11 가상환경 구성(시스템 3.14는 torch 휠 부재 위험). `synthesize(text) -> audio` 어댑터 한 겹으로 격리(단일 백엔드, 과설계 금지).
-- **학습의 의미**: zero-shot = 모델 가중치 학습 없음. "음성 학습"은 **참조 클립 등록**과 동의어 — `voice-samples/`에 참조를 두는 것이 곧 "학습".
-- **참조 입력 규약**: `voice-samples/reference.wav`(깨끗한 ≤10초, 조용한 곳·단일 화자) + `voice-samples/reference.txt`(그 클립의 전사) + 언어=ko. fg-run **실행 전에 사용자가 채워 둔다**(입력 산출물 — pptx처럼 전제 조건이라 별도 플랜 분할 불필요).
-- **재타이밍(필수)**: 클론 음성 길이가 edge-tts와 다르므로, 슬라이드별 노출 시간과 자막 SRT 타임코드를 **새 음성 길이에 맞춰 재계산**. 대본·프레임은 고정.
-- **합성**: done run.md 방식 승계 — 세그먼트별 (프레임 이미지 × 클론 음성) → fade in/out 0.3s + concat → soft `mov_text` 자막 트랙 + SRT sidecar → `ambient.mp3` 베드 -20~-25dB 믹싱 → 새 mp4.
-- **실패 대응(ADR-0001)**: 설치 게이트 차단 또는 M5 사용 불가 수준 저속 시, 로컬 완화책(CPU 모드·소형 모델·스텝/배치 감축) 소진 후 **중단·보고**. 자동 클라우드 전환 금지.
-
-## 작업 조각
-- [ ] S1. **로컬 음성 백엔드 셋업** — `uv`로 Python 3.11 venv + GPT-SoVITS + 한국어 추론에 필요한 가중치/모델 설치, M5에서 짧은 한국어 zero-shot 합성 1건 성공. — 완료 기준: `voice-samples/` 참조로 한국어 문장 1개가 클론 음성 오디오로 합성되어 재생되고, 1문장 합성에 걸린 시간(체감 속도)이 기록된다. **설치 게이트/MPS 실행 불가 시 완화책 소진 후 중단·보고(자동 클라우드 금지, ADR-0001).**
-- [ ] S2. **참조 음성 수집 규약** — `voice-samples/{reference.wav, reference.txt}` 규약 확정 + 필요 시 ffmpeg 정규화(mono·적정 샘플레이트). 사용자가 깨끗한 ≤10초 클립 + 전사를 드롭(실행 전 전제). — 완료 기준: `voice-samples/`에 유효한 참조(오디오 + 전사)가 존재하고 S1 합성이 이를 참조로 사용한다. (depends: S1)
-- [ ] S3. **재사용 합성 파이프라인** — `scripts.json` 32개 대본을 S1 백엔드 + S2 참조로 슬라이드별 클론 음성 32개 생성, 각 길이 기록. 참조 교체 후 재실행 시 재생성되는 스크립트로 구성. — 완료 기준: 32개 음성 파일이 전부 한국어 클론 음성으로 생성되고, 각 길이가 기록되며, `voice-samples/` 교체 후 재실행으로 재생성됨이 확인된다. (depends: S1, S2)
-- [ ] S4. **재타이밍** — 새 음성 길이로 32 세그먼트의 슬라이드 노출 시간과 자막(SRT) 타임코드를 재계산. — 완료 기준: 32 세그먼트 타이밍과 재생성된 SRT의 타임코드가 각 슬라이드 클론 음성 길이와 정합한다. (depends: S3)
-- [ ] S5. **영상 재합성** — `frames/`(fix 우선) + 클론 음성 + `ambient.mp3` 베드를 done run.md 방식(fade in/out 0.3s + concat, soft `mov_text` 자막 + SRT sidecar, 베드 -20~-25dB)으로 새 mp4 산출. — 완료 기준: 새 파일 mp4가 생성되고 ffprobe로 1920×1080 / H.264 / AAC / 오디오 트랙 존재가 확인되며, 총 길이가 32슬라이드 분량(~20분)이고, 원본 `forge-사용법-워크플로우.mp4`는 변경되지 않았다. (depends: S4)
-- [ ] S6. **검증** — 자동(ffprobe 해상도·코덱·길이·오디오 트랙; 세그먼트-음성 동기 타이밍 계산) + 육안(재생, 슬라이드·음성·자막 동기, 자막 가독성, 베드 음량 적정, **음성이 내 목소리로 들리는가 = 클론 정체성**, 한국어 자연스러움). — 완료 기준: 자동 항목 전부 통과하고, 육안 검수에서 동기·가독성·음량·클론 정체성·한국어 자연스러움 이상이 없음이 확인된다. (depends: S5)
+## Work slices
+- [ ] S1. `forge-explainer` 디렉토리에서 `npx remotion render src/index.ts ForgeExplainer out/forge-explainer.mp4` 실행 — completion criterion: `out/forge-explainer.mp4` 생성, ffprobe 실측 길이가 746.136초(±0.5초)와 일치
+- [ ] S2. 사용자가 렌더된 mp4를 재생해 확인(UAT) — completion criterion: 오디오·자막·화면 동기에 문제 없음을 사용자가 승인 (depends: S1)

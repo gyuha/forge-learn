@@ -2,9 +2,9 @@ import "./index.css";
 import { Composition } from "remotion";
 import { ForgeExplainer } from "./Composition";
 
-// Audio (narration extracted from base.mp4) is 1190.1s.
+// Audio (narration, forge 사용 매뉴얼 12분 버전, Edge TTS ko-KR-SunHiNeural) is 746.136s.
 const FPS = 30;
-const DURATION_IN_FRAMES = Math.ceil(1190.1 * FPS); // 35703
+const DURATION_IN_FRAMES = Math.ceil(746.136 * FPS); // 22385
 
 export const RemotionRoot: React.FC = () => {
   return (

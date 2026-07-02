@@ -1,6 +1,6 @@
-# STATUS — 내 목소리 클론으로 사용법 영상 재더빙 + 재사용 파이프라인
-slug: voice-clone-redub-pipeline
+# STATUS — forge-explainer Remotion 프로젝트를 실제 mp4 영상으로 렌더링
+slug: forge-explainer-video-render
 status: executed
-executed: 2026-06-30
-verified: yes (사용자 UAT — 클론 정체성·동기·가독·한국어 자연스러움 OK; 음량은 -16 LUFS로 부스트 재믹스 완료)
+executed: 2026-07-02
+verified: pending (2차 fix-and-re-run — TTS 합성 결함 근본 원인 발견 후 자막·슬라이드 재편집, 재검증 대기)
 retro: pending

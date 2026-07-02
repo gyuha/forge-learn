@@ -4,8 +4,12 @@ __pycache__
 # TTS 파이프라인 — 무거운 산출물은 제외, 스크립트(*.py·run.sh·README)는 커밋
 tts/.venv/
 tts/GPT-SoVITS/
+tts/CosyVoice/
 tts/out_audio/
 tts/out_audio_intro/
+tts/out_audio_13min/
+tts/out_audio_13min_qwen/
+tts/out_audio_forge_manual_edge/
 tts/build/
 tts/build_intro/
 tts/*.log

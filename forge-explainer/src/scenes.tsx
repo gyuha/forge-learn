@@ -1,25 +1,15 @@
 import { interpolate, useCurrentFrame } from "remotion";
-import { body, display, mono } from "./fonts";
+import { body } from "./fonts";
 import { colors, sizes } from "./theme";
 import { clamp, EASE_OUT, popScale } from "./util/anim";
 import { Icon, IconName } from "./components/Icon";
 import { MotionText, MotionWords } from "./components/MotionText";
 import { CommandChip } from "./components/CommandChip";
-import {
-  BigNumber,
-  BranchMain,
-  CriteriaList,
-  LabeledIcon,
-  NotationCompare,
-  StepLines,
-} from "./components/graphics";
+import { BigNumber, NotationCompare } from "./components/graphics";
 import {
   CheatsheetTable,
   CommandFlow,
-  FailurePaths,
-  Gate,
   LoopDiagram,
-  Pipeline,
   PointList,
   SituationBadge,
   SkillGrid,
@@ -145,43 +135,10 @@ const Chip: React.FC<{ text: string; delay?: number; dim?: boolean }> = ({ text,
   );
 };
 
-// A stacked "row card": icon on the left, label + value on the right.
-const RowCard: React.FC<{
-  name: IconName;
-  title: string;
-  note: string;
-  delay?: number;
-  accent?: boolean;
-}> = ({ name, title, note, delay = 0, accent }) => {
-  const frame = useCurrentFrame();
-  const p = interpolate(frame, [delay, delay + 13], [0, 1], { ...clamp, easing: EASE_OUT });
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 32,
-        width: 980,
-        padding: "28px 40px",
-        borderRadius: 24,
-        background: accent ? "rgba(255,138,0,0.10)" : colors.panel,
-        border: `2px solid ${accent ? colors.accent : colors.border}`,
-        opacity: p,
-        translate: `${interpolate(p, [0, 1], [accent ? 50 : -50, 0])}px 0px`,
-      }}
-    >
-      <Icon name={name} size={72} color={accent ? colors.accent : colors.dim} />
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, textAlign: "left", flex: 1 }}>
-        <span style={{ fontFamily: display, fontWeight: 700, fontSize: 56, color: colors.white }}>{title}</span>
-        <span style={{ fontFamily: body, fontWeight: 700, fontSize: 38, color: accent ? colors.accentSoft : colors.dim }}>
-          {note}
-        </span>
-      </div>
-    </div>
-  );
-};
-
 // ---- scene definitions -----------------------------------------------------
+// Retimed 2026-07-02 for the "forge 사용 매뉴얼 12분" narration (Edge TTS,
+// ko-KR-SunHiNeural, 746.1s) — replaces the earlier 66-scene set that was
+// timed against a stale 19.8min narration (see .forge/adr/0004).
 
 export type Scene = {
   id: string;
@@ -191,131 +148,191 @@ export type Scene = {
 };
 
 export const SCENES: Scene[] = [
+  // ===== idx1 (0–26064): 오프닝 — 흔히 겪는 네 가지 문제 =====================
   {
-    id: "s1-thesis-not",
+    id: "s01-open",
     startMs: 0,
-    endMs: 4806,
+    endMs: 8601,
     render: () => (
       <Stack>
         <IconBadge name="book" color={colors.dim} />
-        <KaptionLabel text="이 영상에서 익힐 것은" />
-        <MotionWords text="명령 암기가 아니라" fontSize={128} accentWords={["아니라"]} delay={6} />
+        <KaptionLabel text="Claude Code로 작업하다 보면" />
+        <MotionWords text="이런 순간이 옵니다" fontSize={120} accentWords={["이런", "순간"]} delay={8} />
       </Stack>
     ),
   },
   {
-    id: "s2-thesis-yes",
-    startMs: 4806,
-    endMs: 9200,
-    render: () => (
-      <Stack>
-        <IconBadge name="compass" />
-        <MotionWords
-          text="상황을 보고 판단하는 능력"
-          fontSize={120}
-          accentWords={["판단하는", "능력"]}
-          delay={4}
-        />
-      </Stack>
-    ),
-  },
-  {
-    id: "s3-assume",
-    startMs: 9200,
-    endMs: 15379,
-    render: () => (
-      <Stack gap={28}>
-        <KaptionLabel text="이 영상의 전제" />
-        <RowCard name="check" title="Claude Code" note="이미 써보셨다" delay={6} />
-        <RowCard name="star" title="forge" note="이번이 처음" delay={20} accent />
-      </Stack>
-    ),
-  },
-  {
-    id: "s4-skip-basics",
-    startMs: 15379,
-    endMs: 18674,
-    render: () => (
-      <Stack>
-        <IconBadge name="skip" />
-        <MotionWords text="Claude Code 기초는 건너뛰기" fontSize={104} accentWords={["건너뛰기"]} delay={4} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s5-seven",
-    startMs: 18674,
-    endMs: 24579,
-    render: () => (
-      <Stack gap={28}>
-        <BigNumber value="7" unit="개 상황" label="으로 나누어 본다" dots={7} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s6-notation-1",
-    startMs: 24579,
-    endMs: 35151,
-    render: () => <NotationCompare left="/fg-ask" right="/forge:fg-ask" caption="같은 명령입니다" />,
-  },
-  {
-    id: "s7-core",
-    startMs: 35151,
-    endMs: 39820,
-    render: () => (
-      <Stack gap={48}>
-        <KaptionLabel text="이 영상의 핵심" color={colors.accentSoft} />
-        <div style={{ display: "flex", gap: 80, alignItems: "flex-start" }}>
-          <LabeledIcon name="ladder" label="신뢰 사다리" delay={6} iconSize={104} />
-          <LabeledIcon name="table" label="치트시트 2장" delay={16} iconSize={104} />
-        </div>
-      </Stack>
-    ),
-  },
-  {
-    id: "s8-judgment",
-    startMs: 39820,
-    endMs: 46957,
-    render: () => (
-      <Stack>
-        <KaptionLabel text="명령 사전이 아니다" />
-        <IconBadge name="target" />
-        <MotionWords text="진짜 목표는 판단력" fontSize={128} accentWords={["판단력"]} delay={6} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s9-criteria",
-    startMs: 46957,
-    endMs: 63713,
+    id: "s02-four-problems",
+    startMs: 8601,
+    endMs: 20982,
     render: ({ startMs }) => (
-      <CriteriaList
-        heading="네 가지 성취 기준"
+      <PointList
+        heading="흔히 겪는 네 가지 순간"
         sceneStartMs={startMs}
-        primaryIndex={0}
         items={[
-          { n: "1", text: "상황에 맞는 명령 고르기", revealMs: 50215 },
-          { n: "2", text: "기본 루프", revealMs: 55955 },
-          { n: "3", text: "길을 잃었을 때 대처", revealMs: 57817 },
-          { n: "4", text: "효율적인 차선 선택", revealMs: 60610 },
+          { label: "계획 없이 실행 → 엉뚱한 방향", atMs: 8601 },
+          { label: "세션 끊기면 어디까지 했는지 기억 안 남", atMs: 9500 },
+          { label: "검증 없이 완료라 착각", atMs: 12641 },
+          { label: "같은 작업을 실수로 두 번 실행", atMs: 17463 },
         ]}
       />
     ),
   },
   {
-    id: "s10-fourteen",
-    startMs: 63713,
-    endMs: 71160,
+    id: "s03-forge-answer-tease",
+    startMs: 20982,
+    endMs: 26064,
     render: () => (
-      <Stack gap={30}>
-        <BigNumber value="14" unit="개 유틸리티" label="필요할 때 찾아 쓰는 보조" />
+      <Stack>
+        <IconBadge name="target" />
+        <MotionWords text="forge는 이 네 가지를 막는 개발 루프" fontSize={80} accentWords={["forge"]} delay={4} />
+      </Stack>
+    ),
+  },
+  // ===== idx2 (26064–60528): 월요일 예시 =====================================
+  {
+    id: "s04-monday-example",
+    startMs: 26064,
+    endMs: 54522,
+    render: ({ startMs }) => (
+      <PointList
+        heading="흔한 시나리오"
+        sceneStartMs={startMs}
+        items={[
+          { label: "월요일 — 새 기능 작업 시작", atMs: 28209 },
+          { label: "화요일 — 다른 일로 중단", atMs: 30354 },
+          { label: "수요일 — 어디부터? 기억 안 남", atMs: 33786 },
+          { label: "결국 재검토, 최악은 중복 실행", atMs: 39363 },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "s05-monday-closing",
+    startMs: 54522,
+    endMs: 60528,
+    render: () => (
+      <Stack>
+        <KaptionLabel text="개인이든 팀이든 똑같이 벌어지는 일" />
+        <MotionWords text="forge는 이 문제를 풀려고 만들어졌습니다" fontSize={72} accentWords={["forge"]} delay={6} />
+      </Stack>
+    ),
+  },
+  // ===== idx3 (60528–89112): forge의 답 ======================================
+  {
+    id: "s06-forge-loop",
+    startMs: 60528,
+    endMs: 71074,
+    render: () => (
+      <Stack>
+        <KaptionLabel text="forge의 답" />
+        <MotionWords text="질의 → 실행 → 회고 → 완료, 한 바퀴" fontSize={88} accentWords={["한", "바퀴"]} delay={6} />
       </Stack>
     ),
   },
   {
-    id: "s11-notation-title",
-    startMs: 71160,
-    endMs: 73310,
+    id: "s07-forge-dir",
+    startMs: 71074,
+    endMs: 89112,
+    render: ({ startMs }) => (
+      <Stack gap={40}>
+        <IconBadge name="terminal" />
+        <MotionWords text=".forge 디렉터리에 상태를 남긴다" accentWords={[".forge"]} fontSize={88} delay={6} />
+        <KaptionLabel
+          text="세션이 끊겨도 파일은 남는다 — 필요한 건 판단력"
+          delay={f(74404, startMs)}
+          color={colors.accentSoft}
+        />
+      </Stack>
+    ),
+  },
+  // ===== idx4 (89112–132888): 두 기둥 =========================================
+  {
+    id: "s08-two-pillars",
+    startMs: 89112,
+    endMs: 124766,
+    render: ({ startMs }) => (
+      <PointList
+        heading="forge의 두 기둥"
+        sceneStartMs={startMs}
+        items={[
+          {
+            label: "① 그릴링·회고는 항상 대화로",
+            sub: "자동화 구간엔 사람 입력이 들어갈 자리가 없다",
+            atMs: 92829,
+          },
+          {
+            label: "② 문서는 산출물이 아니라 연료",
+            sub: "계획의 결정이 실행 기준, 회고의 학습이 다음 계획의 출발점",
+            atMs: 110725,
+          },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "s09-pillars-example",
+    startMs: 124766,
+    endMs: 132888,
+    render: () => (
+      <Stack>
+        <KaptionLabel text="예: 계획을 얼마나 쪼갤지도" />
+        <MotionWords text="언제나 대화로 확인합니다" fontSize={80} delay={6} />
+      </Stack>
+    ),
+  },
+  // ===== idx5 (132888–191712): 신뢰 사다리 ====================================
+  {
+    id: "s10-trust-ladder",
+    startMs: 132888,
+    endMs: 156558,
+    render: ({ startMs }) => (
+      <Stack gap={44}>
+        <KaptionLabel text="세 차선 = 자동화 강도" />
+        <TrustLadder
+          sceneStartMs={startMs}
+          levels={[
+            { lvl: "L1", title: "들여다보기", desc: "결정 전 판만 — 실행 안 함", atMs: 140451 },
+            { lvl: "L2", title: "한 단계씩", desc: "운전석에 남아 지켜봄", atMs: 147734 },
+            { lvl: "L3", title: "통째로 맡김", desc: "루프 전체를 자동", atMs: 152916 },
+          ]}
+        />
+      </Stack>
+    ),
+  },
+  {
+    id: "s11-ladder-flex",
+    startMs: 156558,
+    endMs: 180507,
+    render: ({ startMs }) => (
+      <Stack gap={34}>
+        <KaptionLabel text="차선은 언제든 오르내릴 수 있다" />
+        <MotionWords
+          text="fg-status → fg-next → fg-loop 순서로"
+          fontSize={72}
+          delay={f(161740, startMs)}
+        />
+        <KaptionLabel text="신뢰가 쌓이는 만큼 올리면 된다" delay={f(176306, startMs)} color={colors.accentSoft} />
+      </Stack>
+    ),
+  },
+  {
+    id: "s12-automate-judgment",
+    startMs: 180507,
+    endMs: 191712,
+    render: ({ startMs }) => (
+      <Stack>
+        <IconBadge name="compass" />
+        <MotionWords text="자동화하되 판단은 사람에게" fontSize={92} accentWords={["판단"]} delay={4} />
+        <KaptionLabel text="이제 일곱 가지 상황을 보여드립니다" delay={f(186810, startMs)} color={colors.accentSoft} />
+      </Stack>
+    ),
+  },
+  // ===== idx6 (191712–222792): 표기 정리 ======================================
+  {
+    id: "s13-notation-title",
+    startMs: 191712,
+    endMs: 195697,
     render: () => (
       <Stack>
         <IconBadge name="tag" />
@@ -324,15 +341,15 @@ export const SCENES: Scene[] = [
     ),
   },
   {
-    id: "s12-notation-2",
-    startMs: 73310,
-    endMs: 86782,
-    render: () => <NotationCompare left="/fg-ask" right="/forge:fg-ask" caption="두 표기 = 같은 것" />,
+    id: "s14-notation-compare",
+    startMs: 195697,
+    endMs: 208182,
+    render: () => <NotationCompare left="/fg-ask" right="/forge:fg-ask" caption="같은 명령입니다" />,
   },
   {
-    id: "s13-cc-assume",
-    startMs: 86782,
-    endMs: 96241,
+    id: "s15-cc-assume",
+    startMs: 208182,
+    endMs: 218409,
     render: () => (
       <Stack gap={40}>
         <KaptionLabel text="Claude Code는 이미 안다 → 설명 생략" />
@@ -345,178 +362,97 @@ export const SCENES: Scene[] = [
     ),
   },
   {
-    id: "s14-source",
-    startMs: 96241,
-    endMs: 105700,
+    id: "s16-source",
+    startMs: 218409,
+    endMs: 222792,
     render: () => (
-      <Stack gap={40}>
+      <Stack gap={30}>
         <IconBadge name="doc" />
-        <MotionWords text="정답 소스는 forge 공식 문서" fontSize={96} accentWords={["forge", "공식", "문서"]} delay={6} />
-        <KaptionLabel text="배경 이론 ✕  ·  사용법에 집중 ✓" delay={20} color={colors.accentSoft} />
+        <MotionWords text="정답 소스는 forge 공식 문서" fontSize={80} accentWords={["forge", "공식", "문서"]} delay={6} />
       </Stack>
     ),
   },
+  // ===== idx7·idx8 슬롯(222792–265944)의 실제 오디오 =========================
+  // 실측(Whisper 전사) 결과: 이 슬롯의 실제 음성은 설치 안내가 아니라 idx08
+  // 대본("18개 스킬...") 전체 + 대본에 없는 고아 문장("이 파일 기반 상태...")이다.
+  // 설치 안내(idx07 원 대본)는 오디오 어디에도 존재하지 않아 해당 슬라이드를 들어냈다.
+  // 오디오는 그대로 두기로 합의(사용자 결정) — 자막/슬라이드만 실제 음성에 맞춤.
   {
-    id: "s15-two-lines",
-    startMs: 105700,
-    endMs: 107821,
-    render: () => <BigNumber value="2" unit="줄" label="설치는 이게 전부" />,
-  },
-  {
-    id: "s16-install-steps",
-    startMs: 107821,
-    endMs: 112366,
+    id: "s22-grid-three",
+    startMs: 222792,
+    endMs: 229312,
     render: () => (
-      <StepLines
-        steps={[
-          { n: "1", label: "마켓플레이스 추가", code: "marketplace add" },
-          { n: "2", label: "플러그인 설치 → 끝", code: "plugin install forge" },
-        ]}
-      />
-    ),
-  },
-  {
-    id: "s17-local-clone",
-    startMs: 112366,
-    endMs: 117820,
-    render: () => (
-      <Stack gap={40}>
-        <IconBadge name="terminal" />
-        <div
-          style={{
-            fontFamily: mono,
-            fontSize: 52,
-            color: colors.accentSoft,
-            background: colors.panel,
-            border: `2px solid ${colors.border}`,
-            borderRadius: 18,
-            padding: "22px 38px",
-          }}
-        >
-          marketplace add <span style={{ color: colors.white }}>&lt;로컬 경로&gt;</span>
-        </div>
-        <KaptionLabel text="로컬 클론에서 개발 중이라면" delay={16} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s18-first-loop",
-    startMs: 117820,
-    endMs: 122669,
-    render: () => (
-      <Stack gap={44}>
-        <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
-          <CommandChip command="/fg-ask" fontSize={64} />
-          <Icon name="arrow" size={64} color={colors.accent} />
-          <Icon name="loop" size={84} color={colors.accentSoft} />
-        </div>
-        <MotionText text="설치 직후 루프 시작" fontSize={96} delay={10} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s19-usage-focus",
-    startMs: 122669,
-    endMs: 133426,
-    render: () => (
-      <Stack gap={36}>
-        <KaptionLabel text="업데이트 · 제거는 화면 아래 한 줄" />
-        <IconBadge name="gear" color={colors.dim} />
-        <MotionWords text="본령은 설치가 아니라 사용법" fontSize={100} accentWords={["사용법"]} delay={8} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s20-branch-main",
-    startMs: 133426,
-    endMs: 144940,
-    render: () => <BranchMain caption="GitHub 설치는 main 브랜치 · 변경은 먼저 main에 올려야" />,
-  },
-  // ===== Cues 36–45: 세 개의 핵심 명령 =======================================
-  {
-    id: "s21-grid-three",
-    startMs: 144940,
-    endMs: 154701,
-    render: () => (
-      <Stack gap={40}>
-        <MotionText text="겁먹지 마세요 — 평소엔 3개" fontSize={80} />
+      <Stack gap={34}>
+        <MotionText text="겁먹지 마세요 — 평소엔 3개" fontSize={72} />
         <SkillGrid groups={SKILL_GROUPS} core={["fg-ask", "fg-run", "fg-next"]} />
       </Stack>
     ),
   },
   {
-    id: "s22-core-flow",
-    startMs: 154701,
-    endMs: 175679,
+    id: "s23-core-flow",
+    startMs: 229312,
+    endMs: 245472,
     render: ({ startMs }) => (
       <CommandFlow
         sceneStartMs={startMs}
         items={[
-          { cmd: "/fg-ask", label: "계획 다듬기", atMs: 154701 },
-          { cmd: "/fg-run", label: "실행", atMs: 157178 },
-          { cmd: "/fg-next", label: "다음 한 단계", atMs: 159363 },
+          { cmd: "/fg-ask", label: "계획", atMs: 229312 },
+          { cmd: "/fg-run", label: "실행", atMs: 231800 },
+          { cmd: "/fg-next", label: "다음", atMs: 234200 },
         ]}
-        caption={{ text: "한 줄: /fg-ask 후 /fg-next 반복", atMs: 168978 }}
+        caption={{ text: "검증부터 회고·봉인까지 fg-next가 판단 — 한 줄만 기억", atMs: 237832 }}
       />
     ),
   },
   {
-    id: "s23-rest-15",
-    startMs: 175679,
-    endMs: 180050,
-    render: () => (
-      <Stack>
-        <MotionWords text="나머지 15개는 보조" accentWords={["보조"]} fontSize={108} />
-        <KaptionLabel text="필요할 때만 꺼내 쓴다" delay={10} />
-      </Stack>
-    ),
-  },
-  // ===== Cues 46–55: 루프 구조 / 단계 역할 ====================================
-  {
-    id: "s24-loop-reveal",
-    startMs: 180050,
-    endMs: 188563,
+    id: "s24-rest-fifteen",
+    startMs: 245472,
+    endMs: 253488,
     render: ({ startMs }) => (
-      <Stack gap={50}>
-        <KaptionLabel text="루프 전체 구조" />
-        <LoopDiagram
-          sceneStartMs={startMs}
-          sealAtMs={186400}
-          nodes={[
-            { key: "ask", sub: "계획", atMs: 182634 },
-            { key: "run", sub: "실행", atMs: 184155 },
-            { key: "learn", sub: "학습", atMs: 184763 },
-            { key: "done", sub: "정리", atMs: 185675 },
-          ]}
-        />
+      <Stack gap={30}>
+        <MotionWords text="fg-ask 후 fg-next를 계속" accentWords={["fg-ask", "fg-next"]} fontSize={72} />
+        <KaptionLabel text="나머지 15개는 보조" delay={f(249500, startMs)} color={colors.accentSoft} />
       </Stack>
     ),
   },
+  {
+    id: "s24b-orphan-lock",
+    startMs: 253488,
+    endMs: 265944,
+    render: ({ startMs }) => (
+      <Stack gap={30}>
+        <IconBadge name="check" />
+        <KaptionLabel text="활성 슬롯은 항상 한 개로 유지" delay={0} />
+        <KaptionLabel text="봉인이 되어야만 재실행" delay={f(257928, startMs)} color={colors.accentSoft} />
+        <MotionWords text="이제 7가지 상황을 하나씩" fontSize={64} delay={f(262328, startMs)} />
+      </Stack>
+    ),
+  },
+  // ===== idx9 (265944–302208): 루프 구조 상세 =================================
   {
     id: "s25-loop-roles",
-    startMs: 188563,
-    endMs: 203765,
+    startMs: 265944,
+    endMs: 281626,
     render: ({ startMs }) => (
       <Stack gap={50}>
-        <KaptionLabel text="각 단계의 역할" />
+        <KaptionLabel text="forge 루프의 전체 구조" />
         <LoopDiagram
           sceneStartMs={startMs}
-          sealAtMs={202600}
+          sealAtMs={279500}
           nodes={[
-            { key: "ask", sub: "대화형 계획", atMs: 190996 },
-            { key: "run", sub: "워크플로우", atMs: 193884 },
-            { key: "learn", sub: "학습 기록", atMs: 197380 },
-            { key: "done", sub: "정리·봉인", atMs: 200269 },
+            { key: "ask", sub: "계획", atMs: 269000 },
+            { key: "run", sub: "실행", atMs: 272500 },
+            { key: "learn", sub: "학습", atMs: 275800 },
+            { key: "done", sub: "정리", atMs: 278600 },
           ]}
         />
       </Stack>
     ),
   },
-  // ===== Cues 56–62: 활성 슬롯 1개 ===========================================
   {
     id: "s26-active-one",
-    startMs: 203765,
-    endMs: 211214,
+    startMs: 281626,
+    endMs: 293387,
     render: () => (
       <Stack gap={26}>
         <BigNumber value="1" label="활성 슬롯 — 항상 한 개" />
@@ -525,340 +461,272 @@ export const SCENES: Scene[] = [
     ),
   },
   {
-    id: "s27-why-one",
-    startMs: 211214,
-    endMs: 228746,
-    render: ({ startMs }) => (
-      <PointList
-        heading="왜 슬롯이 하나인가"
-        sceneStartMs={startMs}
-        items={[
-          { label: "사람이 검토할 여력에 루프 폭을 맞춤", atMs: 211214 },
-          { label: "봉인돼야 같은 작업이 재실행되지 않음", atMs: 215927 },
-          { label: "done 건너뛰면 재실행 위험", atMs: 220031 },
-          { label: "점진적 자율성을 forge 어휘로 옮긴 것", atMs: 223680 },
-        ]}
-      />
-    ),
-  },
-  // ===== Cues 63–76: 신뢰 사다리 (세 차선) ===================================
-  {
-    id: "s28-ladder",
-    startMs: 228746,
-    endMs: 248087,
-    render: ({ startMs }) => (
-      <Stack gap={44}>
-        <KaptionLabel text="세 차선 = 자동화 강도" />
-        <TrustLadder
-          sceneStartMs={startMs}
-          levels={[
-            { lvl: "L1", title: "들여다보기", desc: "결정 전 판만 — 실행 안 함", atMs: 232583 },
-            { lvl: "L2", title: "한 단계씩", desc: "운전석에 남아 지켜봄", atMs: 238724 },
-            { lvl: "L3", title: "통째로 맡김", desc: "루프 전체를 자동", atMs: 243175 },
-          ]}
-        />
-      </Stack>
-    ),
-  },
-  {
-    id: "s29-ladder-howto",
-    startMs: 248087,
-    endMs: 262056,
-    render: ({ startMs }) => (
-      <PointList
-        heading="차선 올리는 요령"
-        sceneStartMs={startMs}
-        items={[
-          { label: "먼저 /fg-ask로 계획", sub: "사람 판단 — 절대 자동화되지 않음", atMs: 248087 },
-          { label: "가장 낮은(편한) 차선에서 시작", atMs: 256223 },
-          { label: "신뢰가 쌓이면 한 단계씩 올린다", atMs: 259140 },
-        ]}
-      />
-    ),
-  },
-  {
-    id: "s30-l3-preview",
-    startMs: 262056,
-    endMs: 277100,
-    render: ({ startMs }) => (
-      <TwoColCompare
-        heading="두 가지 L3 차선"
-        sceneStartMs={startMs}
-        leftAtMs={262056}
-        rightAtMs={268811}
-        left={{ cmd: "/fg-loop", title: "검증 가능한 목표", bullets: ["grep·테스트로 검증되는 L3"] }}
-        right={{ cmd: "/fg-next all", title: "다듬어둔 대기열", bullets: ["대기열을 비우는 L3"] }}
-      />
-    ),
-  },
-  // ===== Cues 77–87: .forge 상태 파일 ========================================
-  {
-    id: "s31-forge-dir",
-    startMs: 277100,
-    endMs: 288371,
+    id: "s27-plan-run-seal",
+    startMs: 293387,
+    endMs: 302208,
     render: () => (
-      <Stack gap={40}>
-        <IconBadge name="terminal" />
-        <MotionWords text=".forge = 상태를 파일로" accentWords={[".forge", "파일로"]} fontSize={92} delay={6} />
-        <KaptionLabel text="단계를 따로 호출해도 흐름이 이어진다 · 네 단계를 기억" delay={18} />
+      <Stack>
+        <MotionWords text="계획 하나 = 실행 하나 = 봉인 하나" fontSize={72} accentWords={["하나"]} delay={4} />
       </Stack>
     ),
   },
+  // ===== idx10 슬롯(302208–336432)의 실제 오디오 =============================
+  // 실측(Whisper 전사) 결과: 이 슬롯의 실제 음성은 "파일 상태를 두는 이유"가
+  // 아니라 idx12(상황② 일상 작업) 대본의 축약판이다(예시 문장 2개만 빠짐) —
+  // 뒤(s33 이하)에서 같은 내용이 정식으로 다시 나와 중복되지만, 오디오는 그대로
+  // 두기로 합의했으므로 자막/슬라이드만 실제 음성에 맞춘다.
   {
-    id: "s32-pipeline",
-    startMs: 288371,
-    endMs: 310150,
+    id: "s28-sit2-preview",
+    startMs: 302208,
+    endMs: 313328,
     render: ({ startMs }) => (
-      <Stack gap={44}>
-        <KaptionLabel text=".forge 네 단계" />
-        <Pipeline
-          sceneStartMs={startMs}
-          stages={[
-            { key: "backlog", ko: "대기", atMs: 288371 },
-            { key: "active", ko: "활성", atMs: 292026, badge: true },
-            { key: "executed", ko: "회고 대기", atMs: 295529 },
-            { key: "done", ko: "봉인", atMs: 300707 },
-          ]}
-        />
-        <KaptionLabel text="활성 슬롯은 항상 정확히 한 개" delay={f(303296, startMs)} color={colors.accentSoft} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s33-dir-note",
-    startMs: 310150,
-    endMs: 322030,
-    render: () => (
-      <Stack gap={36}>
-        <MotionText text="이 그림은 최소 지식" fontSize={84} />
-        <div style={{ display: "flex", gap: 28 }}>
-          <CommandChip command="/fg-status" fontSize={48} />
-          <CommandChip command="/fg-doctor" fontSize={48} />
-        </div>
-        <KaptionLabel text="읽을 때 필요 · 구현 세부(브랜치 오버레이)는 생략" delay={14} />
-      </Stack>
-    ),
-  },
-  // ===== Cues 88–97: 파일에 두는 이유 4가지 ===================================
-  {
-    id: "s34-four-reasons",
-    startMs: 322030,
-    endMs: 365060,
-    render: ({ startMs }) => (
-      <PointList
-        heading="상태를 파일에 두는 이유 4가지"
-        sceneStartMs={startMs}
-        items={[
-          { label: "재진입", sub: "퇴근 후 다음 날에도 .forge만 보면 이어하기", atMs: 326302 },
-          { label: "재실행 방지", sub: "중복 커밋·마이그레이션을 구조적으로 차단", atMs: 335305 },
-          { label: "검증 게이트", sub: "검증이 기록돼야 봉인", atMs: 349496 },
-          { label: "영속성", sub: "세션 메모리는 날아가도 파일은 남는다", atMs: 356515 },
-        ]}
-      />
-    ),
-  },
-  // ===== Cues 98–102: 일곱 개 상황 시작 ======================================
-  {
-    id: "s35-seven-intro",
-    startMs: 365060,
-    endMs: 376421,
-    render: () => (
       <Stack gap={30}>
-        <BigNumber value="7" unit="개 상황" label="하나씩 살펴보기" />
-        <KaptionLabel text="상황 · 명령 · 산출물 · 다음 단계" delay={20} color={colors.accentSoft} />
+        <SituationBadge n="②" title="일상 작업 — 90%" />
+        <KaptionLabel text="3단 리듬의 실전판" delay={f(306368, startMs)} color={colors.accentSoft} />
       </Stack>
     ),
   },
-  // ===== Cues 103–116: 상황1 새 프로젝트 셋업 ================================
   {
-    id: "s36-sit1",
-    startMs: 376421,
-    endMs: 396941,
+    id: "s28b-grilling-preview",
+    startMs: 313328,
+    endMs: 326568,
+    render: ({ startMs }) => (
+      <PointList
+        heading="fg-ask = 그릴링"
+        sceneStartMs={startMs}
+        numbered={false}
+        items={[
+          { label: "재현 조건·완료 기준·비목표를 못 박는다", atMs: 313328 },
+          { label: "그릴링 품질 = 정답 소스 품질", atMs: 321888 },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "s28c-run-next-preview",
+    startMs: 326568,
+    endMs: 336432,
+    render: ({ startMs }) => (
+      <CommandFlow
+        sceneStartMs={startMs}
+        items={[
+          { cmd: "/fg-run", label: "하나면 실행 · 여럿이면 선택", atMs: 326568 },
+          { cmd: "/fg-next", label: "검증 결과로 판단", atMs: 331448 },
+        ]}
+        caption={{ text: "회고 또는 봉인으로 이어짐", atMs: 333500 }}
+      />
+    ),
+  },
+  // ===== idx11 (336432–380880): situation① 새 프로젝트 셋업 ==================
+  {
+    id: "s30-sit1",
+    startMs: 336432,
+    endMs: 358584,
     render: ({ startMs }) => (
       <Stack gap={46}>
         <SituationBadge n="①" title="새 프로젝트 셋업" />
         <CommandFlow
           sceneStartMs={startMs}
           items={[
-            { cmd: "/fg-map", label: "코드 매핑", atMs: 386400 },
-            { cmd: "/fg-agents", label: "에이전트", atMs: 388600 },
-            { cmd: "/fg-ask", label: "첫 작업", atMs: 390800 },
+            { cmd: "/fg-map", label: "코드 매핑", atMs: 344540 },
+            { cmd: "/fg-agents", label: "에이전트", atMs: 349500 },
+            { cmd: "/fg-ask", label: "첫 작업", atMs: 353500 },
           ]}
-          caption={{ text: "빠른 시작이 생략하는 유일한 사전 단계", atMs: 392724 }}
+          caption={{ text: "빠른 시작이 생략하는 유일한 사전 단계", atMs: 356000 }}
         />
       </Stack>
     ),
   },
   {
-    id: "s37-fgmap",
-    startMs: 396941,
-    endMs: 414408,
+    id: "s31-fgmap",
+    startMs: 358584,
+    endMs: 365823,
     render: ({ startMs }) => (
-      <Stack gap={36}>
-        <CommandChip command="/fg-map" fontSize={60} />
-        <MotionWords
-          text="병렬 서브에이전트로 코드베이스 지도화"
-          accentWords={["지도화"]}
-          fontSize={70}
-          delay={6}
-        />
+      <Stack gap={30}>
+        <CommandChip command="/fg-map" fontSize={56} />
+        <MotionWords text="병렬 서브에이전트로 코드베이스 지도화" accentWords={["지도화"]} fontSize={62} delay={6} />
         <KaptionLabel
-          text="이후 fg-ask가 지도를 읽음 → 컨텍스트 부패 ↓"
-          delay={f(411096, startMs)}
+          text="아키텍처·컨벤션·이슈까지 구조화된 문서로 저장"
+          delay={f(361500, startMs)}
           color={colors.accentSoft}
         />
       </Stack>
     ),
   },
   {
-    id: "s38-fgagents",
-    startMs: 414408,
-    endMs: 438050,
+    id: "s32-fgagents",
+    startMs: 365823,
+    endMs: 380880,
     render: ({ startMs }) => (
       <PointList
         heading="fg-agents — 선택"
         sceneStartMs={startMs}
         numbered={false}
         items={[
-          { label: "반복되는 특화 역할이 있으면 역할 카드 생성", atMs: 416968 },
-          { label: "억지로 만들지 않음 — 없음도 정직한 결과", atMs: 421185 },
-          { label: "카드를 만들어도 세션 재시작해야 fg-run이 인식", atMs: 429316, tone: "warn" },
+          { label: "반복되는 특화 역할이 있으면 카드 생성", atMs: 365823 },
+          { label: "억지로 만들지 않음 — 없음도 정직한 결과", atMs: 369500 },
+          { label: "카드를 만들어도 세션 재시작해야 인식", atMs: 374365, tone: "warn" },
         ]}
       />
     ),
   },
-  // ===== Cues 117–133: 상황2 일상 작업 =======================================
+  // ===== idx12 (380880–432360): situation② 일상 작업 ==========================
   {
-    id: "s39-sit2",
-    startMs: 438050,
-    endMs: 458957,
+    id: "s33-sit2",
+    startMs: 380880,
+    endMs: 391176,
     render: ({ startMs }) => (
-      <Stack gap={46}>
+      <Stack gap={40}>
         <SituationBadge n="②" title="일상 작업 — 90%" />
         <CommandFlow
           sceneStartMs={startMs}
           items={[
-            { cmd: "/fg-ask", label: "계획", atMs: 450840 },
-            { cmd: "/fg-run", label: "실행", atMs: 452500 },
-            { cmd: "/fg-next", label: "다음", atMs: 454200 },
+            { cmd: "/fg-ask", label: "계획", atMs: 384500 },
+            { cmd: "/fg-run", label: "실행", atMs: 386800 },
+            { cmd: "/fg-next", label: "다음", atMs: 389000 },
           ]}
-          caption={{ text: "삼단콤이 forge의 기본 리듬", atMs: 456000 }}
+          caption={{ text: "삼단콤이 forge의 기본 리듬", atMs: 390000 }}
         />
       </Stack>
     ),
   },
   {
-    id: "s40-grilling",
-    startMs: 458957,
-    endMs: 477531,
+    id: "s34-grilling",
+    startMs: 391176,
+    endMs: 410499,
     render: ({ startMs }) => (
-      <Stack gap={34}>
+      <PointList
+        heading="fg-ask = 그릴링"
+        sceneStartMs={startMs}
+        items={[
+          { label: "재현 조건", atMs: 394500 },
+          { label: "완료 기준", atMs: 398500 },
+          { label: "비목표", atMs: 402500 },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "s35-grilling-example",
+    startMs: 410499,
+    endMs: 421923,
+    render: ({ startMs }) => (
+      <Stack gap={30}>
         <PointList
-          heading="fg-ask = 그릴링"
+          heading="예를 들면"
           sceneStartMs={startMs}
+          numbered={false}
           items={[
-            { label: "재현 조건", atMs: 464732 },
-            { label: "완료 기준", atMs: 465669 },
-            { label: "비목표", atMs: 466605 },
+            { label: "몇 번 시도해야 재현되나요?", atMs: 410499 },
+            { label: "이번엔 어디까지가 범위 밖인가요?", atMs: 414500 },
           ]}
         />
         <KaptionLabel
           text="그릴링 품질 = 실행의 정답 소스 품질"
-          delay={f(470195, startMs)}
+          delay={f(418500, startMs)}
           color={colors.accentSoft}
         />
       </Stack>
     ),
   },
   {
-    id: "s41-run-next",
-    startMs: 477531,
-    endMs: 494935,
+    id: "s36-run-next",
+    startMs: 421923,
+    endMs: 432360,
     render: ({ startMs }) => (
       <TwoColCompare
         heading="fg-run · fg-next 동작"
         sceneStartMs={startMs}
-        leftAtMs={477531}
-        rightAtMs={485492}
+        leftAtMs={421923}
+        rightAtMs={427000}
         left={{ cmd: "/fg-run", title: "실행", bullets: ["단일 계획 → 바로 실행", "백로그 여럿 → 선택 메뉴"] }}
         right={{ cmd: "/fg-next", title: "다음 단계", bullets: ["검증 결과 따라 회고로", "차이 작으면 봉인으로"] }}
       />
     ),
   },
-  // ===== Cues 134–150: 상황3 fg-quick =======================================
+  // ===== idx13 (432360–471264): situation③ fg-quick ===========================
   {
-    id: "s42-sit3",
-    startMs: 494935,
-    endMs: 514867,
-    render: ({ startMs }) => (
-      <Stack gap={34}>
+    id: "s37-sit3",
+    startMs: 432360,
+    endMs: 440990,
+    render: () => (
+      <Stack gap={30}>
         <SituationBadge n="③" title="fg-quick — 경량 차선" />
-        <KaptionLabel
-          text="루프 밖 · ADR·계획·회고 없이 바로 실행"
-          delay={f(508356, startMs)}
-          color={colors.accentSoft}
-        />
+        <KaptionLabel text="회고할 게 없는 사소한 일회성 변경" delay={16} color={colors.accentSoft} />
       </Stack>
     ),
   },
   {
-    id: "s43-quick-when",
-    startMs: 514867,
-    endMs: 530371,
+    id: "s38-quick-when",
+    startMs: 440990,
+    endMs: 448487,
     render: ({ startMs }) => (
       <PointList
         heading="fg-quick는 언제?"
         sceneStartMs={startMs}
         numbered={false}
         items={[
-          { label: ".forge 로그에 한 줄만 남김", atMs: 514867 },
-          { label: "오타·문구·버전 번호 — 회고할 게 없는 일회성", atMs: 520759 },
-          { label: "정식 루프로 돌리면 관료주의", atMs: 526650 },
+          { label: "오타·문구·버전 번호", atMs: 440990 },
+          { label: "형식 산출물 없이 바로 실행", atMs: 443700 },
+          { label: "정식 루프로 돌리면 관료주의", atMs: 446200 },
         ]}
       />
     ),
   },
   {
-    id: "s44-quick-escape",
-    startMs: 530371,
-    endMs: 550990,
+    id: "s39-quick-escape",
+    startMs: 448487,
+    endMs: 460937,
     render: ({ startMs }) => (
-      <Stack gap={34}>
-        <MotionWords text="가장 중요한 건 탈출 조건" accentWords={["탈출", "조건"]} fontSize={80} />
+      <Stack gap={30}>
+        <MotionWords text="가장 중요한 건 탈출 조건" accentWords={["탈출", "조건"]} fontSize={76} />
         <PointList
           sceneStartMs={startMs}
           numbered={false}
           items={[
-            { label: "버그가 깊거나 범위가 크다고 드러나면", atMs: 533161, tone: "warn" },
-            { label: "그 즉시 /fg-ask로 옮겨라", atMs: 538122 },
-            { label: "이 판단이 곧 실력", atMs: 549130 },
+            { label: "생각보다 크거나 깊으면", atMs: 452000, tone: "warn" },
+            { label: "그 즉시 /fg-ask로 옮겨라", atMs: 455500 },
+            { label: "이 판단이 곧 실력", atMs: 458500 },
           ]}
         />
       </Stack>
     ),
   },
-  // ===== Cues 151–167: 상황4 L3 두 차선 ======================================
   {
-    id: "s45-sit4",
-    startMs: 550990,
-    endMs: 565680,
+    id: "s40-quick-log",
+    startMs: 460937,
+    endMs: 471264,
+    render: ({ startMs }) => (
+      <Stack>
+        <IconBadge name="doc" color={colors.dim} />
+        <KaptionLabel
+          text="계획서·회고 문서 없이 로그 한 줄만 남는다"
+          delay={f(460937, startMs)}
+        />
+      </Stack>
+    ),
+  },
+  // ===== idx14 (471264–523656): situation④ L3 두 차선 ==========================
+  {
+    id: "s41-sit4",
+    startMs: 471264,
+    endMs: 476990,
     render: () => (
-      <Stack gap={34}>
+      <Stack gap={30}>
         <SituationBadge n="④" title="L3 — 루프 통째로 맡기기" />
-        <KaptionLabel text="계획은 사람, 검증이 기계로 명확하면" delay={16} color={colors.accentSoft} />
       </Stack>
     ),
   },
   {
-    id: "s46-l3-compare",
-    startMs: 565680,
-    endMs: 602764,
+    id: "s42-l3-compare",
+    startMs: 476990,
+    endMs: 502756,
     render: ({ startMs }) => (
       <TwoColCompare
         heading="두 L3 차선 비교"
         sceneStartMs={startMs}
-        leftAtMs={574008}
-        rightAtMs={585793}
+        leftAtMs={476990}
+        rightAtMs={485006}
         left={{
           cmd: "/fg-next all",
           title: "대기열 비우기",
@@ -873,332 +741,272 @@ export const SCENES: Scene[] = [
     ),
   },
   {
-    id: "s47-wall",
-    startMs: 602764,
-    endMs: 619420,
+    id: "s43-wall-detection",
+    startMs: 502756,
+    endMs: 514495,
     render: ({ startMs }) => (
-      <Stack gap={32}>
-        <PointList
-          heading="둘 다 '벽'에서 멈춘다"
-          sceneStartMs={startMs}
-          numbered={false}
-          items={[
-            { label: "검증이 불가능", atMs: 604806 },
-            { label: "진짜 방향 갈등", atMs: 606600 },
-            { label: "진전이 없음", atMs: 608500 },
-          ]}
-        />
+      <PointList
+        heading="벽 감지 예시"
+        sceneStartMs={startMs}
+        numbered={false}
+        items={[
+          { label: "검증이 두 라운드 연속 진전 없음", atMs: 502756 },
+          { label: "이미 통과한 조건을 다시 깨뜨리는 핑퐁", atMs: 508000, tone: "warn" },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "s44-wall-handoff",
+    startMs: 514495,
+    endMs: 523656,
+    render: ({ startMs }) => (
+      <Stack>
         <KaptionLabel
-          text="멈추면 맥락을 사람에게 — 무인이지 무책임이 아니다"
-          delay={f(613920, startMs)}
+          text="둘 다 벽에서 멈추고 맥락을 사람에게 — 무인이지 무책임이 아니다"
+          delay={f(514495, startMs)}
           color={colors.accentSoft}
         />
       </Stack>
     ),
   },
-  // ===== Cues 168–186: 상황5 status / doctor =================================
+  // ===== idx15 (523656–570264): situation⑤ 재진입 · 점검 =======================
   {
-    id: "s48-sit5",
-    startMs: 619420,
-    endMs: 637096,
+    id: "s45-sit5",
+    startMs: 523656,
+    endMs: 535596,
     render: () => (
-      <Stack gap={34}>
+      <Stack gap={30}>
         <SituationBadge n="⑤" title="재진입 · 점검" />
         <KaptionLabel text="'어디까지 했지?' → 읽기 전용 도구 2개" delay={16} color={colors.accentSoft} />
       </Stack>
     ),
   },
   {
-    id: "s49-status-doctor",
-    startMs: 637096,
-    endMs: 654038,
+    id: "s46-status-doctor",
+    startMs: 535596,
+    endMs: 555447,
     render: ({ startMs }) => (
       <TwoColCompare
         heading="읽기 전용 — 쓰기·자동실행 X"
         sceneStartMs={startMs}
-        leftAtMs={645859}
-        rightAtMs={649802}
+        leftAtMs={540000}
+        rightAtMs={547000}
         left={{ cmd: "/fg-status", title: "어디까지 했나?", bullets: ["진행 상태를 본다"] }}
-        right={{ cmd: "/fg-doctor", title: "상태가 건강한가?", bullets: ["무결성을 점검한다"] }}
+        right={{ cmd: "/fg-doctor", title: "상태가 건강한가?", bullets: ["고아 파일·상태 손상 검사"] }}
       />
     ),
   },
   {
-    id: "s50-status-detail",
-    startMs: 654038,
-    endMs: 682080,
+    id: "s47-status-example",
+    startMs: 555447,
+    endMs: 564078,
     render: ({ startMs }) => (
       <PointList
-        heading="두 도구 활용"
+        heading="예를 들면"
         sceneStartMs={startMs}
         numbered={false}
-        items={[
-          { label: "fg-status '회고 대기' → fg-next로 이어가기", atMs: 655352 },
-          { label: "fg-doctor: 고아 파일·상태 손상·슬러그 짝 검사", atMs: 663093 },
-          { label: "문서 정합도 점검", atMs: 676238 },
-          { label: "위반 보고 → 수정은 사람이 fg-quick·fg-ask로", atMs: 677552 },
-        ]}
+        items={[{ label: "fg-status '회고 대기' → fg-next로 이어가기", atMs: 555447 }]}
       />
     ),
   },
-  // ===== Cues 187–202: 상황6 마무리 + 적대적 리뷰 ============================
   {
-    id: "s51-sit6",
-    startMs: 682080,
-    endMs: 695718,
+    id: "s48-status-fix",
+    startMs: 564078,
+    endMs: 570264,
+    render: ({ startMs }) => (
+      <Stack>
+        <KaptionLabel text="문제를 발견해도 수정은 사람이 fg-quick·fg-ask로" delay={f(564078, startMs)} />
+      </Stack>
+    ),
+  },
+  // ===== idx16 (570264–617112): situation⑥ 마무리 · 배포 ========================
+  {
+    id: "s49-sit6",
+    startMs: 570264,
+    endMs: 572937,
     render: () => (
-      <Stack gap={34}>
+      <Stack gap={30}>
         <SituationBadge n="⑥" title="마무리 · 출하" />
-        <KaptionLabel text="learn + done이 한 바퀴를 닫는다" delay={16} color={colors.accentSoft} />
       </Stack>
     ),
   },
   {
-    id: "s52-finish",
-    startMs: 695718,
-    endMs: 711662,
+    id: "s50-finish-flow",
+    startMs: 572937,
+    endMs: 588131,
     render: ({ startMs }) => (
       <CommandFlow
         sceneStartMs={startMs}
         items={[
-          { cmd: "/fg-learn", label: "회고→학습 문서", atMs: 695718 },
-          { cmd: "/fg-done", label: "봉인·아카이브", atMs: 700274 },
-          { cmd: "배포", label: "결과 내보내기", atMs: 707410 },
+          { cmd: "/fg-learn", label: "회고→학습 문서", atMs: 572937 },
+          { cmd: "/fg-done", label: "봉인·아카이브", atMs: 578500 },
+          { cmd: "배포", label: "결과 내보내기", atMs: 584200 },
         ]}
-        caption={{ text: "봉인돼야 재실행이 막힌다", atMs: 704981 }}
+        caption={{ text: "봉인돼야 재실행이 막힌다", atMs: 586000 }}
       />
     ),
   },
   {
-    id: "s53-adversarial",
-    startMs: 711662,
-    endMs: 741120,
+    id: "s51-adversarial-intro",
+    startMs: 588131,
+    endMs: 600511,
     render: ({ startMs }) => (
       <Stack gap={30}>
-        <CommandChip command="/fg-adversarial-review" fontSize={44} />
+        <CommandChip command="/fg-adversarial-review" fontSize={42} />
+        <PointList
+          sceneStartMs={startMs}
+          numbered={false}
+          items={[{ label: "결제·인증처럼 위험한 변경에서, 결과가 틀렸다고 가정", atMs: 588131 }]}
+        />
+      </Stack>
+    ),
+  },
+  {
+    id: "s52-six-lenses",
+    startMs: 600511,
+    endMs: 617112,
+    render: ({ startMs }) => (
+      <PointList
+        heading="여섯 개 렌즈로 동시에"
+        sceneStartMs={startMs}
+        numbered={false}
+        items={[
+          { label: "놓친 실패 지점 · 숨은 가정", atMs: 600511 },
+          { label: "요구사항 오독 · 보안과 성능", atMs: 605000 },
+          { label: "예상 밖 오용 · 근거 약한 판단", atMs: 609500 },
+          { label: "다만 이건 선택 — 봉인 게이트는 아님", atMs: 613500 },
+        ]}
+      />
+    ),
+  },
+  // ===== idx17 (617112–658152): situation⑦ 유지보수 ============================
+  {
+    id: "s53-sit7",
+    startMs: 617112,
+    endMs: 639626,
+    render: ({ startMs }) => (
+      <Stack gap={30}>
+        <SituationBadge n="⑦" title="유지보수 — 정비 도구" />
         <PointList
           sceneStartMs={startMs}
           numbered={false}
           items={[
-            { label: "위험 변경(결제·인증·마이그레이션)에서", atMs: 717280 },
-            { label: "'틀렸다' 가정 — 공격자 자세로 6개 렌즈 병렬", atMs: 721228 },
-            { label: "단, 봉인 게이트는 아님 (게이트=검증·회고뿐)", atMs: 729000 },
-            { label: "무인 주행은 건너뜀 · 판단은 사람 몫", atMs: 737628 },
+            { label: "fg-cleanup · fg-merge", atMs: 622000 },
+            { label: "fg-drop", atMs: 627000 },
+            { label: "fg-tdd · fg-eco · fg-statusline", atMs: 632000 },
           ]}
         />
       </Stack>
     ),
   },
-  // ===== Cues 203–216: 상황7 유지보수 도구 ===================================
   {
-    id: "s54-sit7",
-    startMs: 741120,
-    endMs: 759581,
-    render: () => (
-      <Stack gap={34}>
-        <SituationBadge n="⑦" title="유지보수 — 정비 도구" />
-        <KaptionLabel text="일상엔 안 쓰지만 달력에 두면 좋다" delay={16} color={colors.accentSoft} />
-      </Stack>
-    ),
-  },
-  {
-    id: "s55-maint-tools",
-    startMs: 759581,
-    endMs: 803400,
+    id: "s54-maint-example",
+    startMs: 639626,
+    endMs: 652749,
     render: ({ startMs }) => (
       <PointList
-        heading="루프 밖 정비 도구"
+        heading="예를 들면"
         sceneStartMs={startMs}
         numbered={false}
         items={[
-          { label: "fg-cleanup", sub: "대체된 ADR 은퇴 처리 (번호 유지·삭제 X)", atMs: 759581 },
-          { label: "fg-merge", sub: "브랜치 forge 상태를 기본 브랜치로 합치기", atMs: 771345 },
-          { label: "fg-drop", sub: "미완 작업 안전 삭제 (깃·코드는 안 건드림)", atMs: 778844 },
-          { label: "fg-tdd · fg-eco", sub: "설정 토글 (eco = 소넷 제한 + 단순성 규율)", atMs: 787961 },
+          { label: "ADR이 쌓여 그릴링이 느려지면 → fg-cleanup", atMs: 639626 },
+          { label: "브랜치 병합 후 forge 상태까지 → fg-merge", atMs: 646000 },
         ]}
       />
     ),
   },
-  // ===== Cues 217–227: 치트시트 ① 의사결정 ===================================
   {
-    id: "s56-cheat1",
-    startMs: 803400,
-    endMs: 848020,
+    id: "s55-maint-closing",
+    startMs: 652749,
+    endMs: 658152,
     render: ({ startMs }) => (
-      <CheatsheetTable
-        heading="치트시트 ① 의사결정"
-        sceneStartMs={startMs}
-        rows={[
-          { sit: "오타·버전 번호", cmd: "/fg-quick", next: "경량 차선", atMs: 813612 },
-          { sit: "보통 작업", cmd: "정식 루프", next: "ask → run → next", atMs: 816500 },
-          { sit: "기계 검증 가능한 목표", cmd: "/fg-loop", next: "자가 수정", atMs: 824767 },
-          { sit: "아니면 백로그 쌓고", cmd: "/fg-next all", next: "대기열 비우기", atMs: 826653 },
-          { sit: "길을 잃음", cmd: "/fg-status", next: "안전하게 판만", atMs: 830895, highlight: true },
-        ]}
-        footer={{ text: "이 5가지 = 18개의 90%", atMs: 839536 }}
-      />
-    ),
-  },
-  // ===== Cues 228–242: fg-ask 4가지 산물 =====================================
-  {
-    id: "s57-ask-products",
-    startMs: 848020,
-    endMs: 902040,
-    render: ({ startMs }) => (
-      <Stack gap={30}>
-        <PointList
-          heading="fg-ask의 4가지 산물"
-          sceneStartMs={startMs}
-          items={[
-            { label: "용어", sub: "애매한 단어를 정확히 못 박음 → 용어집", atMs: 859375 },
-            { label: "완료 기준", sub: "'잘못된 입력에 400 반환'처럼 관측 가능", atMs: 869009 },
-            { label: "비목표", sub: "안 할 것 명시 → 범위 폭발 방지", atMs: 878471 },
-            { label: "조각", sub: "독립 검증·봉인 단위로 분할", atMs: 886040 },
-          ]}
-        />
-        <KaptionLabel
-          text="이게 제대로 안 되면 실행이 흔들린다"
-          delay={f(895331, startMs)}
-          color={colors.accentSoft}
-        />
+      <Stack>
+        <KaptionLabel text="매일 쓰는 도구가 아니라 가끔 정비할 때" delay={f(652749, startMs)} color={colors.accentSoft} />
       </Stack>
     ),
   },
-  // ===== Cues 243–254: divergence + 검증 게이트 ==============================
+  // ===== idx18 (658152–672720): 피드백 루프 =====================================
   {
-    id: "s58-divergence",
-    startMs: 902040,
-    endMs: 925103,
-    render: ({ startMs }) => (
-      <PointList
-        heading="run 파일 = 계획과 실제의 차이 (divergence)"
-        sceneStartMs={startMs}
-        numbered={false}
-        items={[
-          { label: "차이가 작으면 → 회고 건너뛰고 봉인", atMs: 912709 },
-          { label: "차이가 크면 → /fg-ask로 재정비 (배울 게 있다)", atMs: 917102 },
-        ]}
-      />
-    ),
-  },
-  {
-    id: "s59-gate",
-    startMs: 925103,
-    endMs: 948480,
+    id: "s56-feedback-loop",
+    startMs: 658152,
+    endMs: 672720,
     render: ({ startMs }) => (
       <Stack gap={34}>
-        <Gate sceneStartMs={startMs} />
-        <KaptionLabel
-          text="실행 직후 '실행됨' → fg-done이 '완료'로 뒤집음"
-          delay={f(940949, startMs)}
-        />
+        <IconBadge name="loop" />
+        <MotionWords text="회고의 학습이 다음 그릴링의 출발점" accentWords={["다음", "그릴링"]} fontSize={72} delay={4} />
+        <KaptionLabel text="문서가 두꺼워질수록 그릴링도 좋아진다" delay={f(662151, startMs)} color={colors.accentSoft} />
       </Stack>
     ),
   },
-  // ===== Cues 255–268: 실패 상태 ============================================
+  // ===== idx19 (672720–697248): 요약표 ==========================================
   {
-    id: "s60-failure",
-    startMs: 948480,
-    endMs: 999100,
-    render: ({ startMs }) => <FailurePaths sceneStartMs={startMs} />,
-  },
-  // ===== Cues 269–282: 제작 원칙 (메타) ======================================
-  {
-    id: "s61-meta",
-    startMs: 999100,
-    endMs: 1042010,
-    render: ({ startMs }) => (
-      <PointList
-        heading="이 영상의 제작 원칙"
-        sceneStartMs={startMs}
-        items={[
-          { label: "분위기·섹션 구분 = 이미지", atMs: 1007069 },
-          { label: "명령·상태명·화살표 = 텍스트/도형", atMs: 1010287 },
-          { label: "이미지에 명령을 박으면 깨짐 → 이미지는 텍스트 없이", atMs: 1017797 },
-          { label: "흐름도 = 상황·명령·산출물·다음 (일관 구조)", atMs: 1028524 },
-        ]}
-      />
-    ),
-  },
-  // ===== Cues 283–292: 치트시트 ② 상황→명령→다음 ============================
-  {
-    id: "s62-cheat2",
-    startMs: 1042010,
-    endMs: 1077670,
+    id: "s57-cheatsheet",
+    startMs: 672720,
+    endMs: 697248,
     render: ({ startMs }) => (
       <CheatsheetTable
-        heading="치트시트 ② 상황 → 명령 → 다음"
+        heading="상황 → 명령 → 다음"
         sceneStartMs={startMs}
         rows={[
-          { sit: "새 프로젝트", cmd: "/fg-map", next: "지도 → 첫 작업", atMs: 1046674 },
-          { sit: "일상 작업", cmd: "ask·run·next", next: "기본 리듬", atMs: 1048800 },
-          { sit: "사소한 일회 변경", cmd: "/fg-quick", next: "바로 실행", atMs: 1054649, highlight: true },
-          { sit: "재진입·점검", cmd: "/fg-status", next: "안전하게 판만", atMs: 1059012, highlight: true },
-          { sit: "실패", cmd: "/fg-ask", next: "고치거나 재정비", atMs: 1064000 },
+          { sit: "새 프로젝트", cmd: "/fg-map", next: "지도 → 첫 작업", atMs: 676000 },
+          { sit: "일상 작업", cmd: "ask·run·next", next: "기본 리듬", atMs: 679000 },
+          { sit: "사소한 일회 변경", cmd: "/fg-quick", next: "바로 실행", atMs: 684918, highlight: true },
+          { sit: "재진입·점검", cmd: "/fg-status", next: "안전하게 판만", atMs: 688000, highlight: true },
+          { sit: "루프 통째로", cmd: "/fg-loop · all", next: "벽까지 자동", atMs: 691000 },
         ]}
-        footer={{ text: "/fg-ask 후 /fg-next(또는 all) 반복", atMs: 1070448 }}
+        footer={{ text: "fg-quick · fg-status 이 두 줄이 가장 헷갈린다", atMs: 693500 }}
       />
     ),
   },
-  // ===== Cues 293–306: 18개 전체 표 =========================================
+  // ===== idx20 (697248–746112): 정리 · 마무리 ====================================
   {
-    id: "s63-grid18",
-    startMs: 1077670,
-    endMs: 1117530,
-    render: ({ startMs }) => (
-      <Stack gap={30}>
-        <MotionText text="18개 전체 한눈에" fontSize={74} />
-        <SkillGrid groups={SKILL_GROUPS} core={["fg-ask", "fg-run", "fg-next", "fg-quick", "fg-status"]} />
-        <KaptionLabel
-          text="다 외울 필요 없음 — 핵심 5개로 80% 커버"
-          delay={f(1101837, startMs)}
-          color={colors.accentSoft}
-        />
-      </Stack>
-    ),
+    id: "s58-summary-intro",
+    startMs: 697248,
+    endMs: 701083,
+    render: () => <MotionWords text="정리하겠습니다 — 실수 패턴 세 가지" fontSize={72} />,
   },
-  // ===== Cues 307–317: 실수 패턴 3가지 ======================================
   {
-    id: "s64-mistakes",
-    startMs: 1117530,
-    endMs: 1159430,
+    id: "s59-mistakes",
+    startMs: 701083,
+    endMs: 722532,
     render: ({ startMs }) => (
       <PointList
         heading="실수 패턴 3가지"
         sceneStartMs={startMs}
         items={[
-          { label: "ask 건너뛰고 run → 정답 소스 없는 실행", sub: "반드시 ask부터 시작", atMs: 1123402, tone: "warn" },
-          { label: ".forge 상태 무시 → 재실행·길 잃음", sub: "습관적으로 fg-status로 판부터", atMs: 1133084, tone: "warn" },
-          { label: "실패 상태를 억지로 봉인 — 게이트가 막음", sub: "정직하게 고치거나 fg-ask로", atMs: 1143400, tone: "warn" },
+          { label: "ask 건너뛰고 run → 정답 소스 없는 실행", atMs: 701083, tone: "warn" },
+          { label: ".forge 상태 무시 → 재실행·길 잃음", atMs: 707191, tone: "warn" },
+          { label: "실패 상태를 억지로 봉인 — 게이트가 막음", atMs: 713157, tone: "warn" },
         ]}
       />
     ),
   },
-  // ===== Cues 318–325: 출처 + 마무리 ========================================
   {
-    id: "s65-source",
-    startMs: 1159430,
-    endMs: 1176998,
-    render: ({ startMs }) => (
-      <Stack gap={36}>
+    id: "s60-source",
+    startMs: 722532,
+    endMs: 728498,
+    render: () => (
+      <Stack gap={30}>
         <IconBadge name="doc" />
-        <MotionWords
-          text="정답 소스 = forge README · 문서"
-          accentWords={["README", "문서"]}
-          fontSize={74}
-          delay={6}
-        />
-        <KaptionLabel
-          text="스킬 파일 = 18개 상세 · 상태 계약 파일 = 상태 계약"
-          delay={f(1168063, startMs)}
-        />
+        <MotionWords text="정답 소스 = forge README · 문서" accentWords={["README", "문서"]} fontSize={68} delay={4} />
       </Stack>
     ),
   },
   {
-    id: "s66-closing",
-    startMs: 1176998,
-    endMs: 1190100,
+    id: "s61-deeper-docs",
+    startMs: 728498,
+    endMs: 736027,
+    render: ({ startMs }) => (
+      <Stack>
+        <KaptionLabel text="더 깊이 알고 싶으면 문서 폴더의 스킬별 상세 설명" delay={f(728498, startMs)} />
+      </Stack>
+    ),
+  },
+  {
+    id: "s62-closing",
+    startMs: 736027,
+    endMs: 746112,
     render: ({ startMs }) => (
       <Stack gap={36}>
         <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
@@ -1206,8 +1014,8 @@ export const SCENES: Scene[] = [
           <Icon name="arrow" size={56} color={colors.accent} />
           <CommandChip command="/fg-next" fontSize={58} />
         </div>
-        <MotionWords text="이 한 줄이 기억나면 성공" accentWords={["성공"]} fontSize={76} delay={f(1184874, startMs)} />
-        <MotionText text="감사합니다" fontSize={64} color={colors.accentSoft} delay={f(1188811, startMs)} />
+        <MotionWords text="이 한 줄이 기억나면 성공" accentWords={["성공"]} fontSize={76} delay={f(741000, startMs)} />
+        <MotionText text="감사합니다" fontSize={64} color={colors.accentSoft} delay={f(744500, startMs)} />
       </Stack>
     ),
   },
